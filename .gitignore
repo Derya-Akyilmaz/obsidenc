@@ -68,3 +68,9 @@ Icon
 *.tmp
 *.log
 
+# obsidenc specific
+run.bat
+*.oen
+staging/
+.obsidenc-staging-*/
+
