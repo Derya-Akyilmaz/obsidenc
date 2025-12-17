@@ -28,12 +28,13 @@ pub fn random_nonce() -> [u8; crate::format::NONCE_LEN] {
 /// Selects memory and iterations to maintain security while targeting reasonable runtime.
 ///
 /// **Memory Selection:**
-/// Uses ~85% of available memory (leaving 15% headroom for system), with:
-/// - Minimum: 512 MiB (hard floor)
-/// - Maximum: 2 GiB (RFC 9106 target)
+/// Security target is based on total system memory (hardware capability), not current load:
+/// - Systems with >= 4 GiB total RAM: 2 GiB target (RFC 9106 guidance)
+/// - Systems with < 4 GiB total RAM: 512 MiB minimum
 ///
-/// This replaces the arbitrary 256 MiB reserve with a percentage-based approach that
-/// scales with available memory, ensuring we use available resources efficiently.
+/// This ensures consistent security parameters regardless of system load. The required
+/// amount must be available (free) at encryption time, or the operation fails with a
+/// clear error message asking the user to close other applications.
 ///
 /// **Iteration Selection (Adaptive):**
 /// - If memory >= 2 GiB: t=1 (RFC 9106 guidance)
@@ -54,23 +55,30 @@ pub fn select_params_rfc9106_v1() -> Result<Argon2Params, Error> {
 
     let mut system = System::new();
     system.refresh_memory();
+    let total_bytes = system.total_memory();
     let available_bytes = system.available_memory();
 
     const TARGET_BYTES: u64 = 2_u64 * 1024 * 1024 * 1024; // 2 GiB
     const MIN_BYTES: u64 = 512_u64 * 1024 * 1024; // 512 MiB
-    const MEMORY_USAGE_RATIO: f64 = 0.85; // Use 85% of available memory
+    const MIN_TOTAL_FOR_TARGET: u64 = 4_u64 * 1024 * 1024 * 1024; // 4 GiB
 
-    // Select memory: use 85% of available, capped at 2 GiB, floored at 512 MiB
-    let chosen_bytes = {
-        let candidate = (available_bytes as f64 * MEMORY_USAGE_RATIO) as u64;
-        candidate.min(TARGET_BYTES).max(MIN_BYTES)
+    // Base security target on total system memory (hardware capability), not current load
+    // This ensures consistent security parameters regardless of system load
+    let target_usage = if total_bytes >= MIN_TOTAL_FOR_TARGET {
+        TARGET_BYTES // 2 GiB for systems with >= 4 GiB RAM
+    } else {
+        MIN_BYTES // 512 MiB for systems with < 4 GiB RAM
     };
 
-    if available_bytes < MIN_BYTES {
+    // Fail safe if RAM is physically unavailable right now
+    // User must close other applications to meet security target
+    if available_bytes < target_usage {
         return Err(Error::Unsupported(
-            "insufficient memory for Argon2id (need >= 512 MiB free)",
+            "insufficient free RAM to meet security target. Please close other applications.",
         ));
     }
+
+    let chosen_bytes = target_usage;
 
     let mut memory_kib: u32 = (chosen_bytes / 1024)
         .try_into()
