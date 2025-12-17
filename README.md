@@ -70,17 +70,59 @@ The project includes fuzzing infrastructure to verify robustness against malform
 
 **Platform Support:** Fuzzing is only available on Linux/Unix. The fuzzing targets are automatically disabled on Windows (libfuzzer-sys doesn't support Windows). The main obsidenc binary works perfectly on Windows - only the fuzzing infrastructure is platform-limited.
 
-To run fuzzing (Linux/Unix only):
+### Running Fuzzing on Linux
 
+**Prerequisites:**
+- Linux system (or WSL on Windows)
+- Rust nightly toolchain (fuzzing requires nightly features)
+- LLVM/Clang (required for libfuzzer)
+
+**Step 1: Install Rust nightly toolchain**
+```sh
+# Install nightly (if not already installed)
+rustup toolchain install nightly
+
+# Use nightly for fuzzing (you can switch back to stable after)
+rustup default nightly
+# OR use nightly just for this project:
+rustup override set nightly
+```
+
+**Step 2: Install cargo-fuzz**
 ```sh
 cargo install cargo-fuzz
+```
+
+**Step 3: Run the fuzzing target**
+```sh
+# From the project root directory
 cargo fuzz run fuzz_decrypt
 ```
 
-The fuzzing target (`fuzz/fuzz_targets/fuzz_decrypt.rs`) tests:
-- Header parsing with malformed input
+**Note:** If you want to keep stable as your default toolchain, you can use `rustup override set nightly` in the project directory instead of `rustup default nightly`. This sets nightly only for this project.
+
+**Step 3: Let it run**
+- The fuzzer will run indefinitely, generating random inputs
+- Press Ctrl+C to stop
+- If a panic is found, the fuzzer will save the input that caused it to `fuzz/artifacts/fuzz_decrypt/`
+- Check the output for any crashes or panics
+
+**Advanced options:**
+```sh
+# Run with a timeout (e.g., 60 seconds)
+cargo fuzz run fuzz_decrypt -- -max_total_time=60
+
+# Run for a specific number of iterations
+cargo fuzz run fuzz_decrypt -- -runs=10000
+
+# Run with corpus (saved interesting inputs)
+cargo fuzz run fuzz_decrypt -- -merge=1
+```
+
+**What the fuzzing target tests:**
+- Header parsing with malformed input (wrong magic bytes, invalid version, etc.)
 - Chunk parsing with invalid lengths and data
-- Buffer handling edge cases
+- Buffer handling edge cases (empty chunks, oversized chunks, etc.)
 - Ensures all errors are returned as `Result::Err`, never panics
 
 **Windows Users:** If you need to run fuzzing, use WSL (Windows Subsystem for Linux) or a Linux VM. The main encryption/decryption functionality works natively on Windows.
