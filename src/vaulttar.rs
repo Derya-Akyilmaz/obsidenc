@@ -49,15 +49,14 @@ fn scrub_metadata(header: &mut tar::Header) {
         // Use as_gnu_mut() to access GNU-specific fields
         if let Some(gnu_header) = header.as_gnu_mut() {
             // Set to "root" to provide generic, non-identifying values
-            // These are byte arrays in GNU tar format
-            let _ = gnu_header.set_uname(b"root");
-            let _ = gnu_header.set_gname(b"root");
+            let _ = gnu_header.set_username("root");
+            let _ = gnu_header.set_groupname("root");
         }
         
         // Scrub device IDs (for device files, though we reject them)
         // Setting to 0 is safe and prevents any device information leakage
-        header.set_device_major(0);
-        header.set_device_minor(0);
+        let _ = header.set_device_major(0);
+        let _ = header.set_device_minor(0);
     }
 }
 
