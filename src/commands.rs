@@ -110,6 +110,15 @@ pub fn encrypt(
         return Err(Error::Unsupported("refusing to encrypt symlinked vault root"));
     }
 
+    // Ensure output file has .oen extension
+    let output_file = if output_file.extension().and_then(|s| s.to_str()) == Some("oen") {
+        output_file.to_path_buf()
+    } else {
+        let mut path = output_file.to_path_buf();
+        path.set_extension("oen");
+        path
+    };
+
     let password = prompt_password(true)?;
 
     let keyfile_bytes = match keyfile {
@@ -143,7 +152,7 @@ pub fn encrypt(
     let cipher = aead::create_cipher(&*enc_key);
 
     // Write header
-    let mut out = open_new_file(output_file, force)?;
+    let mut out = open_new_file(&output_file, force)?;
     out.write_all(&header_bytes)?;
 
     // Create tar archive in memory buffer (we'll chunk it)

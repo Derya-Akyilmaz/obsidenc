@@ -1,6 +1,6 @@
 # obsidenc v0.1.0
 
-Paranoid-grade encryption utility. It tars a directory (no compression) and encrypts/decrypts it with Argon2id (RFC 9106 guidance) + XChaCha20-Poly1305.
+Paranoid-grade encryption utility. It tars a directory (no compression) and encrypts/decrypts it with Argon2id (RFC 9106 guidance) + XChaCha20-Poly1305. See ANALYSIS.md for full details.
 
 ## Building
 
