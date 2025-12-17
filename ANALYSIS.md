@@ -17,12 +17,14 @@
 **Argon2id Configuration:**
 - **Variant**: Argon2id (hybrid resistance to time-memory trade-offs)
 - **Version**: Argon2 v1.3
-- **Memory Cost**: Adaptive, 85% of available system memory
-  - Minimum: 512 MiB (hard floor)
-  - Maximum: 2 GiB (RFC 9106 target)
-- **Time Cost (Iterations)**: Adaptive based on available memory
-  - 2+ GiB memory: 1 iteration (RFC 9106 guidance)
-  - < 2 GiB memory: 2-4 iterations (maintains security cost target)
+- **Memory Cost**: Adaptive, based on total system memory (hardware capability)
+  - Systems with >= 4 GiB total RAM: 2 GiB target (RFC 9106 guidance)
+  - Systems with < 4 GiB total RAM: 512 MiB minimum
+  - Security target is based on total system memory, not current load, ensuring consistent security parameters
+  - Operation fails if insufficient free RAM is available (user must close other applications)
+- **Time Cost (Iterations)**: Adaptive based on memory target
+  - Memory >= 2 GiB: 1 iteration (RFC 9106 guidance)
+  - Memory < 2 GiB: 2-4 iterations (maintains security cost target of 2 GiB)
 - **Parallelism**: Up to 4 threads (capped at available CPU cores)
 
 **Key Hierarchy:**
@@ -48,12 +50,14 @@
 - Per-chunk authentication tags (Poly1305)
 - Additional authenticated data (AAD) includes header, chunk index, and final chunk flag
 - Auth-first decryption (verification before plaintext exposure)
+- Verification token in header provides immediate password feedback (wrong password detected before full decryption)
 
 **File Format Security:**
 - Magic bytes: "OBSIDENC"
-- Versioned format (currently v1)
+- Versioned format (currently v2, V1 support removed)
 - Defensive parsing with strict validation
 - Constant-time comparison for magic bytes
+- Encrypted files use `.oen` extension by default
 
 ### Threat Model
 
@@ -73,11 +77,16 @@
 **Encryption Process:**
 - Streams TAR archive directly to encryption writer (uses small fixed 64KB buffer for chunking, no full archive buffering)
 - Encrypts in 64KB chunks with unique nonces as data is written
-- Writes header (magic, version, salt, Argon2 params, base nonce)
+- Writes header (magic, version, salt, Argon2 params, base nonce, verification token)
 - Writes chunk records: [u32 length][ciphertext+tag]
+- Writes zero-length chunk sentinel to mark end of encrypted data
+- Appends random padding to make file size a multiple of 4KB (obscures exact payload size)
+- Uses `O_NOATIME` flag when reading source files (Unix) to prevent access time updates (privacy preservation)
+  - Falls back to normal open if insufficient privileges (with user warning)
 
 **Decryption Process:**
 - Streaming decryption (no full archive accumulation in memory)
+- Verification token checked immediately after master key derivation (provides early password feedback)
 - Staging directory with atomic rename on success
 - Automatic cleanup on failure
 - Refuses to overwrite existing directories unless `--force` flag used
@@ -87,6 +96,7 @@
   - Effectiveness: High on HDDs, limited on SSDs due to wear leveling
   - Performance impact: Slower cleanup, especially for large files
   - Use case: When staging directory may be subject to forensic recovery
+- Robust signal handling (Ctrl+C safety): Graceful interruption ensures Drop implementations run for secure cleanup
 
 **Archive Handling:**
 - Rejects symlinks (security hardening)
@@ -117,6 +127,8 @@
 - Argon2 (RFC 9106 compliant)
 - Zeroize (secure memory clearing)
 - Subtle (constant-time operations)
+- ctrlc (signal handling for graceful interruption)
+- libc (Unix-specific features like O_NOATIME)
 
 ### Code Quality
 
@@ -142,14 +154,26 @@
 - Compliance with high-security requirements
 - Protection against offline brute-force attacks
 
+## Testing and Robustness
+
+**Fuzzing Infrastructure:**
+- Integrated `cargo-fuzz` for robustness testing
+- Fuzz target tests decryption parsing logic with malformed input
+- Dual-mode fuzzing: tests both header parsing error handling and chunk decryption logic
+- Automatically constructs valid headers to test actual decryption code paths
+- Ensures all errors are returned as `Result::Err`, never panics
+- Platform support: Linux/Unix only (libfuzzer-sys limitation)
+- Seed corpus support for improved coverage
+
 ## Limitations
 
 - No compression (by design, for security)
 - No incremental updates (full re-encryption required)
-- Requires significant memory (minimum 512 MiB free)
+- Requires significant memory (minimum 512 MiB free, must meet security target)
 - Slower than convenience-focused tools (security-first design)
 - No key rotation or update mechanisms
 - Secure deletion effectiveness limited on SSDs (wear leveling prevents guaranteed overwrite)
+- Fuzzing requires Rust nightly toolchain (main binary works on stable)
 
 ## Summary
 
