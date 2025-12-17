@@ -35,6 +35,7 @@
 
 **Memory Protection:**
 - Memory locking (mlock/VirtualLock) to prevent swapping of sensitive data
+- MemoryLock struct owns locked data to guarantee lifetime safety (prevents use-after-free)
 - Zeroize crate for automatic secure memory clearing
 - Memory locks applied to passwords, keyfiles, master keys, and derived keys
 
@@ -70,7 +71,7 @@
 ### Operational Security
 
 **Encryption Process:**
-- Streams TAR archive directly to encryption writer (no buffering)
+- Streams TAR archive directly to encryption writer (uses small fixed 64KB buffer for chunking, no full archive buffering)
 - Encrypts in 64KB chunks with unique nonces as data is written
 - Writes header (magic, version, salt, Argon2 params, base nonce)
 - Writes chunk records: [u32 length][ciphertext+tag]
@@ -86,7 +87,7 @@
 - Path length limits (4096 characters, zip-bomb protection)
 - File count limits (1 million files, zip-bomb protection)
 - Permission sanitization on extract (removes executable bits, setuid/setgid)
-- Safe path sanitization (rejects "..", absolute paths, etc.)
+- Safe path sanitization (strips leading "./", rejects ".." and absolute paths for security)
 
 ### Platform Support
 
@@ -114,7 +115,7 @@
 **Defensive Programming:**
 - Extensive input validation
 - Bounds checking
-- Error handling with custom error types
+- Error handling with custom error types (all library functions return Result, no panics)
 - No unsafe code except for OS memory locking APIs
 - Defensive parsing with format validation
 
