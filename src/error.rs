@@ -18,6 +18,9 @@ pub enum Error {
     #[error("authentication failed")]
     AuthenticationFailed,
 
+    #[error("incorrect password or keyfile")]
+    BadPassword,
+
     #[error("container format error: {0}")]
     Format(&'static str),
 
