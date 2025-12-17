@@ -1,4 +1,5 @@
-<img width="256" height="256" alt="image" src="https://github.com/user-attachments/assets/50bfa5e0-30c5-48b2-91ff-17dcc7653b04" />
+<img width="256" height="256" alt="image-removebg-preview (3)" src="https://github.com/user-attachments/assets/c870f10a-206f-4387-b479-45c7346b418b" />
+
 
 # obsidenc v0.1.0
 
