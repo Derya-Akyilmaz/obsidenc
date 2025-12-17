@@ -30,21 +30,48 @@ pub fn run(cli: Cli) -> Result<(), Error> {
 }
 
 fn open_new_file(path: &Path, force: bool) -> Result<File, Error> {
-    if path.exists() && !force {
-        return Err(Error::WouldOverwrite(path.to_path_buf()));
-    }
     #[cfg(unix)]
     {
         use std::os::unix::fs::OpenOptionsExt;
         let mut oo = OpenOptions::new();
-        oo.write(true).create(true).truncate(true).mode(0o600);
-        return Ok(oo.open(path)?);
+        oo.write(true);
+        
+        if force {
+            // Force mode: truncate existing file
+            oo.create(true).truncate(true).mode(0o600);
+            return Ok(oo.open(path)?);
+        } else {
+            // Atomic check-and-create: fails if file exists
+            oo.create_new(true).mode(0o600);
+            match oo.open(path) {
+                Ok(f) => Ok(f),
+                Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {
+                    Err(Error::WouldOverwrite(path.to_path_buf()))
+                }
+                Err(e) => Err(e.into()),
+            }
+        }
     }
     #[cfg(not(unix))]
     {
         let mut oo = OpenOptions::new();
-        oo.write(true).create(true).truncate(true);
-        return Ok(oo.open(path)?);
+        oo.write(true);
+        
+        if force {
+            // Force mode: truncate existing file
+            oo.create(true).truncate(true);
+            return Ok(oo.open(path)?);
+        } else {
+            // Atomic check-and-create: fails if file exists
+            oo.create_new(true);
+            match oo.open(path) {
+                Ok(f) => Ok(f),
+                Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {
+                    Err(Error::WouldOverwrite(path.to_path_buf()))
+                }
+                Err(e) => Err(e.into()),
+            }
+        }
     }
 }
 
