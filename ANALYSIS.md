@@ -119,7 +119,7 @@
 **Release Optimizations:**
 - Link-time optimization (LTO)
 - Single codegen unit
-- Panic = unwind (default) - ensures Drop implementations run to clean up secrets on panic
+- Panic = unwind (default) - ensures Drop implementations (including Zeroize) always run to wipe secrets from RAM, even on panic
 - Symbol stripping enabled
 
 **Dependencies:**
