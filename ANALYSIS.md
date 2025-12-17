@@ -102,7 +102,8 @@
 **Release Optimizations:**
 - Link-time optimization (LTO)
 - Single codegen unit
-- Panic = abort (smaller binary, no unwinding)
+- Panic = unwind (default) - ensures Drop implementations run to clean up secrets on panic
+- Symbol stripping enabled
 
 **Dependencies:**
 - RustCrypto primitives (chacha20poly1305, hkdf, sha2)
