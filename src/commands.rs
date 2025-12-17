@@ -258,6 +258,17 @@ pub fn encrypt(
         None => None,
     };
 
+    // Warn user about atime privacy risk
+    #[cfg(unix)]
+    {
+        eprintln!("⚠️  Privacy Notice: This tool attempts to prevent access time (atime) updates");
+        eprintln!("   when reading files. However, if files are owned by other users or you lack");
+        eprintln!("   sufficient privileges, atime may still be updated, revealing when files");
+        eprintln!("   were accessed. For maximum privacy, ensure you own all files or run with");
+        eprintln!("   appropriate privileges.");
+        eprintln!();
+    }
+
     let params = kdf::select_params_rfc9106_v1()?;
     let salt = kdf::random_salt();
     let base_nonce = kdf::random_nonce();

@@ -3,6 +3,34 @@ use std::fs::{self, File};
 use std::io;
 use std::path::{Path, PathBuf};
 
+/// Open a file for reading with O_NOATIME flag to prevent access time updates.
+/// Falls back to normal open if we don't have sufficient privileges (EPERM).
+/// This preserves privacy by not updating atime, which could reveal when files were accessed.
+#[cfg(unix)]
+fn open_file_noatime(path: &Path) -> Result<File, Error> {
+    use std::os::unix::fs::OpenOptionsExt;
+    
+    let mut opts = std::fs::OpenOptions::new();
+    opts.read(true);
+    opts.custom_flags(libc::O_NOATIME);
+    
+    match opts.open(path) {
+        Ok(f) => Ok(f),
+        Err(e) if e.raw_os_error() == Some(libc::EPERM) => {
+            // Fall back to normal open if we don't have privileges
+            // This is expected when encrypting files owned by others
+            File::open(path).map_err(Into::into)
+        }
+        Err(e) => Err(e.into()),
+    }
+}
+
+/// Open a file for reading (Windows doesn't have atime, so just open normally).
+#[cfg(not(unix))]
+fn open_file_noatime(path: &Path) -> Result<File, Error> {
+    File::open(path).map_err(Into::into)
+}
+
 /// Scrub metadata from TAR header to prevent privacy leaks.
 /// This removes timestamps, ownership, and device information that could
 /// reveal system details, usernames, or activity timelines.
@@ -151,7 +179,7 @@ fn walk<W: io::Write>(
             header.set_mode(0o644);
         }
         header.set_cksum();
-        let mut f = File::open(path)?;
+        let mut f = open_file_noatime(path)?;
         builder.append_data(&mut header, &rel, &mut f)?;
         return Ok(());
     }
