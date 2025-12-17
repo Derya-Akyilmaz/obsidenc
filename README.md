@@ -1,14 +1,43 @@
 # obsidenc
 
-Paranoid-grade vault encryption utility for Obsidian (or any directory). It tars a directory (no compression) and encrypts/decrypts it with Argon2id (RFC 9106 guidance) + XChaCha20-Poly1305.
+Paranoid-grade encryption utility. It tars a directory (no compression) and encrypts/decrypts it with Argon2id (RFC 9106 guidance) + XChaCha20-Poly1305.
+
+## Building
+
+### Prerequisites
+
+- [Rust](https://www.rust-lang.org/tools/install) (latest stable version)
+
+### Build Commands
+
+**Debug build:**
+```sh
+cargo build
+```
+Binary will be at: `target/debug/obsidenc` (or `target/debug/obsidenc.exe` on Windows)
+
+**Release build (optimized):**
+```sh
+cargo build --release
+```
+Binary will be at: `target/release/obsidenc` (or `target/release/obsidenc.exe` on Windows)
+
+**Run directly (without installing):**
+```sh
+cargo run -- encrypt <vault_dir> <output_file>
+cargo run --release -- encrypt <vault_dir> <output_file>
+```
+
+**Windows (Command Prompt):**
+```batch
+run.bat encrypt <vault_dir> <output_file>
+```
 
 ## Security model
 
 - Attacker has full access to the encrypted file.
 - Attacker has unlimited offline time.
 - Attacker does *not* have runtime access to the machine during encryption/decryption.
-
-If you need usability over security, this tool is not the right fit.
 
 ## Usage
 
@@ -31,6 +60,3 @@ Install and run:
 cargo install cargo-audit
 cargo audit
 ```
-
-Treat all RustSec advisories as release blockers.
-

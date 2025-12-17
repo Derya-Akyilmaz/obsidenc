@@ -3,7 +3,6 @@ use crate::format::NONCE_LEN;
 use chacha20poly1305::{AeadInPlace, KeyInit, XChaCha20Poly1305, XNonce};
 use hkdf::Hkdf;
 use sha2::Sha256;
-use zeroize::Zeroizing;
 
 const CHUNK_SIZE: usize = 64 * 1024; // 64KB chunks
 

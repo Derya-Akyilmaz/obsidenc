@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(name = "obsidenc", version)]
-#[command(about = "Encrypt/decrypt an Obsidian vault as a single encrypted tar archive.")]
+#[command(about = "Encrypt/decrypt a directory as a single encrypted tar archive.")]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Command,

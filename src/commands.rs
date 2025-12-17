@@ -178,6 +178,7 @@ pub fn encrypt(
     }
 
     out.flush()?;
+    eprintln!("Encryption successful: {}", output_file.display());
     Ok(())
 }
 
@@ -192,8 +193,21 @@ pub fn decrypt(
         return Err(Error::InvalidArgs("input_file must be a regular file"));
     }
 
-    if output_dir.exists() && !force {
-        return Err(Error::WouldOverwrite(output_dir.to_path_buf()));
+    // Check if output directory exists and is non-empty
+    if output_dir.exists() {
+        if !force {
+            // Check if directory is empty
+            let is_empty = if output_dir.is_dir() {
+                fs::read_dir(output_dir)?.next().is_none()
+            } else {
+                false // If it's a file, it's not empty
+            };
+            
+            if !is_empty {
+                return Err(Error::WouldOverwrite(output_dir.to_path_buf()));
+            }
+            // If empty directory, we can proceed (will be cleaned up by staging logic)
+        }
     }
 
     let password = prompt_password(false)?;
@@ -234,15 +248,26 @@ pub fn decrypt(
     )?;
     vaulttar::extract_to_dir(decrypt_reader, &staging)?;
 
+    // If output directory exists and is non-empty, handle it
     if output_dir.exists() {
-        if force {
-            safe_remove_dir_all(output_dir)?;
+        let is_empty = if output_dir.is_dir() {
+            fs::read_dir(output_dir)?.next().is_none()
         } else {
-            return Err(Error::WouldOverwrite(output_dir.to_path_buf()));
+            false
+        };
+        
+        if !is_empty {
+            if force {
+                safe_remove_dir_all(output_dir)?;
+            } else {
+                return Err(Error::WouldOverwrite(output_dir.to_path_buf()));
+            }
         }
+        // If empty, we can proceed (will be replaced by atomic rename)
     }
     fs::rename(&staging, output_dir)?;
     staging_cleanup.disarm();
+    eprintln!("Decryption successful: {}", output_dir.display());
     Ok(())
 }
 

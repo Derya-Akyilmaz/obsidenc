@@ -283,12 +283,3 @@ pub fn derive_nonce_key(master_key: &[u8; 32]) -> Zeroizing<[u8; 32]> {
     okm
 }
 
-// Legacy function name for backward compatibility during refactoring
-pub fn derive_key_argon2id(
-    password: Zeroizing<Vec<u8>>,
-    keyfile: Option<Zeroizing<Vec<u8>>>,
-    salt: &[u8; SALT_LEN],
-    params: Argon2Params,
-) -> Result<Zeroizing<[u8; 32]>, Error> {
-    derive_master_key(password, keyfile, salt, params)
-}

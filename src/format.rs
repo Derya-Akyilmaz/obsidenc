@@ -6,18 +6,14 @@ pub const VERSION_V1: u8 = 1;
 
 pub const SALT_LEN: usize = 16;
 pub const NONCE_LEN: usize = 24;
-pub const TAG_LEN: usize = 16;
 
 pub const ARGON_PARAMS_LEN: usize = 16;
 pub const HEADER_LEN: usize = 8 + 1 + SALT_LEN + ARGON_PARAMS_LEN + NONCE_LEN;
 
-// Chunk record format:
-// [u32 chunk_len LE] (4 bytes) - length of ciphertext (includes tag)
-// [chunk_ciphertext] (chunk_len bytes) - includes tag at end
-pub const CHUNK_LEN_SIZE: usize = 4;
-
-// Argon2 variant identifiers
+// Argon2 variant identifiers (for documentation and future extensibility)
+#[allow(dead_code)]
 pub const ARGON2_VARIANT_D: u8 = 0;
+#[allow(dead_code)]
 pub const ARGON2_VARIANT_I: u8 = 1;
 pub const ARGON2_VARIANT_ID: u8 = 2;
 
