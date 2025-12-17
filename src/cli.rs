@@ -26,6 +26,9 @@ pub enum Command {
         keyfile: Option<PathBuf>,
         #[arg(long)]
         force: bool,
+        #[arg(long)]
+        /// Overwrite staging files with zeros before deletion (slower but more secure)
+        secure_delete: bool,
     },
 }
 

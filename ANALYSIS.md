@@ -81,6 +81,12 @@
 - Staging directory with atomic rename on success
 - Automatic cleanup on failure
 - Refuses to overwrite existing directories unless `--force` flag used
+- Optional secure deletion (`--secure-delete` flag): Overwrites staging files with zeros before deletion
+  - Default: Off (standard deletion for performance)
+  - When enabled: Files are overwritten in 64KB chunks before deletion
+  - Effectiveness: High on HDDs, limited on SSDs due to wear leveling
+  - Performance impact: Slower cleanup, especially for large files
+  - Use case: When staging directory may be subject to forensic recovery
 
 **Archive Handling:**
 - Rejects symlinks (security hardening)
@@ -143,6 +149,7 @@
 - Requires significant memory (minimum 512 MiB free)
 - Slower than convenience-focused tools (security-first design)
 - No key rotation or update mechanisms
+- Secure deletion effectiveness limited on SSDs (wear leveling prevents guaranteed overwrite)
 
 ## Summary
 

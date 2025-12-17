@@ -26,7 +26,8 @@ pub fn run(cli: Cli) -> Result<(), Error> {
             output_dir,
             keyfile,
             force,
-        } => decrypt(&input_file, &output_dir, keyfile.as_deref(), force),
+            secure_delete,
+        } => decrypt(&input_file, &output_dir, keyfile.as_deref(), force, secure_delete),
     }
 }
 
@@ -336,6 +337,7 @@ pub fn decrypt(
     output_dir: &Path,
     keyfile: Option<&Path>,
     force: bool,
+    secure_delete: bool,
 ) -> Result<(), Error> {
     let meta = fs::metadata(input_file)?;
     if !meta.is_file() {
@@ -392,7 +394,7 @@ pub fn decrypt(
 
     // Create staging directory
     let staging = staging_dir_for(output_dir)?;
-    let mut staging_cleanup = StagingCleanup::new(&staging);
+    let mut staging_cleanup = StagingCleanup::new(&staging, secure_delete);
 
     // Stream decrypt chunks directly to tar extractor (auth-first, no memory accumulation)
     let decrypt_reader = StreamingDecryptReader::new(
@@ -430,13 +432,15 @@ pub fn decrypt(
 struct StagingCleanup {
     path: PathBuf,
     armed: bool,
+    secure_delete: bool,
 }
 
 impl StagingCleanup {
-    fn new(path: &Path) -> Self {
+    fn new(path: &Path, secure_delete: bool) -> Self {
         Self {
             path: path.to_path_buf(),
             armed: true,
+            secure_delete,
         }
     }
 
@@ -448,9 +452,88 @@ impl StagingCleanup {
 impl Drop for StagingCleanup {
     fn drop(&mut self) {
         if self.armed {
-            let _ = fs::remove_dir_all(&self.path);
+            if self.secure_delete {
+                let _ = secure_remove_dir_all(&self.path);
+            } else {
+                let _ = fs::remove_dir_all(&self.path);
+            }
         }
     }
+}
+
+/// Securely delete a file by overwriting with zeros before deletion.
+/// Uses chunked writes to avoid loading entire file in memory.
+/// Note: Effectiveness is limited on SSDs due to wear leveling.
+fn secure_delete_file(path: &Path) -> Result<(), Error> {
+    use std::io::{Seek, Write};
+    
+    // Get file size first
+    let metadata = std::fs::metadata(path)?;
+    let file_size = metadata.len();
+    
+    if file_size == 0 {
+        // Empty file, just delete
+        std::fs::remove_file(path)?;
+        return Ok(());
+    }
+    
+    // Open for writing to overwrite content
+    let mut file = std::fs::OpenOptions::new()
+        .write(true)
+        .open(path)?;
+    
+    // Overwrite in chunks to avoid memory issues
+    const CHUNK_SIZE: usize = 64 * 1024; // 64KB chunks
+    let zeros = vec![0u8; CHUNK_SIZE];
+    let mut remaining = file_size;
+    
+    file.seek(std::io::SeekFrom::Start(0))?;
+    
+    while remaining > 0 {
+        let to_write = (remaining as usize).min(CHUNK_SIZE);
+        file.write_all(&zeros[..to_write])?;
+        remaining -= to_write as u64;
+    }
+    
+    // Force write to disk
+    file.sync_all()?;
+    drop(file);
+    
+    // Now delete
+    std::fs::remove_file(path)?;
+    Ok(())
+}
+
+/// Securely delete a directory tree recursively by overwriting files before deletion.
+/// Note: Effectiveness is limited on SSDs due to wear leveling.
+fn secure_remove_dir_all(path: &Path) -> Result<(), Error> {
+    // Defense-in-depth: refuse to delete obvious dangerous targets
+    if path.as_os_str().is_empty() {
+        return Err(Error::InvalidArgs("refusing to delete empty path"));
+    }
+    if path.parent().is_none() {
+        return Err(Error::InvalidArgs("refusing to delete filesystem root"));
+    }
+    
+    // Recursively delete files and directories
+    if path.is_dir() {
+        for entry in std::fs::read_dir(path)? {
+            let entry = entry?;
+            let entry_path = entry.path();
+            
+            if entry_path.is_dir() {
+                secure_remove_dir_all(&entry_path)?;
+            } else {
+                secure_delete_file(&entry_path)?;
+            }
+        }
+        // Remove empty directory
+        std::fs::remove_dir(path)?;
+    } else {
+        secure_delete_file(path)?;
+    }
+    
+    Ok(())
 }
 
 fn safe_remove_dir_all(path: &Path) -> Result<(), Error> {
