@@ -1,7 +1,7 @@
 <img width="256" height="256" alt="Obsidenc Logo" src="https://github.com/user-attachments/assets/c870f10a-206f-4387-b479-45c7346b418b" />
 
 
-# obsidenc v1.0.0
+# obsidenc v1.0.1
 
 Paranoid-grade encryption utility. It tars a directory (no compression) and encrypts/decrypts it with Argon2id (RFC 9106 guidance) + XChaCha20-Poly1305. See [ANALYSIS.md](./ANALYSIS.md) for full details.
 
@@ -99,9 +99,9 @@ cargo audit
 ## Smoke test (CLI round-trip)
 
 There is an automated smoke test that:
-- Encrypts the files in `test/mock` into `test/test.oen`
-- Decrypts `test/test.oen` into `test/decrypt`
-- Verifies that all decrypted files exactly match the originals in `test/mock`
+- Encrypts the files in `tests/mock` into `tests/test.oen`
+- Decrypts `tests/test.oen` into `tests/decrypt`
+- Verifies that all decrypted files exactly match the originals in `tests/mock`
 
 To run it:
 
@@ -110,7 +110,7 @@ To run it:
 cargo test --test roundtrip
 ```
 
-The test never modifies the original `test/mock` data; it only creates and deletes `test/test.oen` and `test/decrypt/`.
+The test never modifies the original `tests/mock` data; it only creates and deletes `tests/test.oen` and `tests/decrypt/`.
 
 ## Fuzzing
 

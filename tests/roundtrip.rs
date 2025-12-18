@@ -14,21 +14,21 @@ fn read_file(path: &Path) -> Vec<u8> {
 #[test]
 fn encrypt_then_decrypt_mock_roundtrip() {
     // This test:
-    // 1. Encrypts the files in test/mock into test/test.oen
-    // 2. Decrypts test/test.oen into test/decrypt
-    // 3. Verifies that all files in test/mock match the corresponding files in test/decrypt
+    // 1. Encrypts the files in tests/mock into tests/test.oen
+    // 2. Decrypts tests/test.oen into tests/decrypt
+    // 3. Verifies that all files in tests/mock match the corresponding files in tests/decrypt
     //
-    // It never modifies the original mock data under test/mock.
+    // It never modifies the original mock data under tests/mock.
 
     let root = project_root();
-    let mock_dir = root.join("test").join("mock");
+    let mock_dir = root.join("tests").join("mock");
     assert!(
         mock_dir.is_dir(),
         "expected mock directory at {}",
         mock_dir.display()
     );
 
-    let test_dir = root.join("test");
+    let test_dir = root.join("tests");
     let enc_file = test_dir.join("test.oen");
     let decrypt_dir = test_dir.join("decrypt");
 
@@ -128,12 +128,27 @@ fn encrypt_then_decrypt_mock_roundtrip() {
         );
     }
 
-    // 4. Clean up the encrypted artifact; keep mock and decrypt for inspection if needed.
+    // 4. Clean up artifacts:
+    //    - Remove the encrypted file
+    //    - Remove all decrypted files and recreate an empty decrypt directory
     if let Err(e) = fs::remove_file(&enc_file) {
         eprintln!(
             "warning: failed to remove test artifact {}: {e}",
             enc_file.display()
         );
+    }
+    if decrypt_dir.exists() {
+        if let Err(e) = fs::remove_dir_all(&decrypt_dir) {
+            eprintln!(
+                "warning: failed to remove decrypt directory {}: {e}",
+                decrypt_dir.display()
+            );
+        } else if let Err(e) = fs::create_dir_all(&decrypt_dir) {
+            eprintln!(
+                "warning: failed to recreate empty decrypt directory {}: {e}",
+                decrypt_dir.display()
+            );
+        }
     }
 }
 

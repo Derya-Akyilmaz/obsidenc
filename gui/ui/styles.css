@@ -41,6 +41,19 @@ body {
   padding: 0 16px 32px;
 }
 
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .header h1 {
   margin: 0;
   font-size: 28px;
@@ -53,6 +66,13 @@ body {
 
 .subtitle code {
   font-family: var(--mono);
+}
+
+.header-logo {
+  height: 80px;
+  width: auto;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
 .tabs {
@@ -106,7 +126,7 @@ input[type="password"] {
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid var(--border);
-  background: transparent;
+  background: rgba(255, 255, 255, 0.04);
   color: var(--text);
   outline: none;
   font-size: 14px;
@@ -194,14 +214,14 @@ button[type="submit"]:disabled {
 
 .logs {
   margin-top: 14px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: 14px;
+  padding: 14px;
 }
 
 .log-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
+  display: none;
 }
 
 .log-header h2 {
@@ -210,31 +230,29 @@ button[type="submit"]:disabled {
 }
 
 .log-output {
-  min-height: 160px;
-  max-height: 320px;
-  overflow: auto;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.15);
-  font-family: var(--mono);
-  font-size: 12px;
-  white-space: pre-wrap;
-  word-break: break-word;
+  display: none;
 }
 
 .status {
   margin-top: 10px;
   font-size: 13px;
   color: var(--muted);
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: rgba(0, 0, 0, 0.15);
 }
 
 .status.error {
   color: var(--danger);
+  border-color: var(--danger);
+  background: rgba(248, 113, 113, 0.12);
 }
 
 .status.ok {
   color: var(--ok);
+  border-color: var(--ok);
+  background: rgba(52, 211, 153, 0.10);
 }
 
 @media (max-width: 760px) {

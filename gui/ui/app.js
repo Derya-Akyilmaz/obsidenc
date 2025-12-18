@@ -8,6 +8,14 @@ function setStatus(message, kind = "") {
   const status = $("status");
   status.textContent = message;
   status.className = `status${kind ? ` ${kind}` : ""}`;
+  if (message) {
+    // Ensure the status banner is visible when we have something to show.
+    try {
+      status.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } catch (_) {
+      // Ignore if scrollIntoView is not supported.
+    }
+  }
 }
 
 function appendLog(line) {
