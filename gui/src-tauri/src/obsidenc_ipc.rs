@@ -58,6 +58,11 @@ pub struct RunResult {
     pub resolved_output: String,
 }
 
+#[derive(Debug, Serialize)]
+pub struct VersionInfo {
+    pub gui: String,
+}
+
 #[derive(Debug)]
 enum ProcEvent {
     Stdout(String),
@@ -340,6 +345,13 @@ async fn run_obsidenc(
         stderr,
         resolved_output,
     })
+}
+
+#[tauri::command]
+pub async fn get_version() -> VersionInfo {
+    VersionInfo {
+        gui: env!("CARGO_PKG_VERSION").to_string(),
+    }
 }
 
 #[tauri::command]

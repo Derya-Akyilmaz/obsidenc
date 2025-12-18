@@ -17,7 +17,11 @@ pub fn run() {
             }
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![encrypt_vault, decrypt_vault])
+        .invoke_handler(tauri::generate_handler![
+            encrypt_vault,
+            decrypt_vault,
+            crate::obsidenc_ipc::get_version
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

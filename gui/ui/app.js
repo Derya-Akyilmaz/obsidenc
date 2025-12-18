@@ -54,6 +54,19 @@ async function main() {
   let activeOpId = null;
   let busy = false;
 
+  // Populate version label (bottom-right) from Tauri backend.
+  try {
+    const info = await TAURI.core.invoke("get_version");
+    if (info && typeof info.gui === "string") {
+      const el = document.getElementById("version-label");
+      if (el) {
+        el.textContent = `v${info.gui}`;
+      }
+    }
+  } catch (_) {
+    // Non-fatal if version cannot be resolved.
+  }
+
   await TAURI.event.listen("obsidenc/log", (event) => {
     const payload = event.payload;
     if (!payload) return;

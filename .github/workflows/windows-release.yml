@@ -38,7 +38,7 @@ jobs:
           $tag = "${{ github.ref_name }}"
           if (-not $tag) { $tag = "dev-build" }
           New-Item -ItemType Directory -Path dist -Force | Out-Null
-          $exe = "dist\obsidenc-$tag-windows-x86_64.exe"
+          $exe = "dist\obsidenc.exe"
           Copy-Item "target\release\obsidenc.exe" $exe -Force
           # Write checksum file: "<SHA256>  <filename>"
           $hash = Get-FileHash $exe -Algorithm SHA256
@@ -60,7 +60,7 @@ jobs:
           New-Item -ItemType Directory -Path dist -Force | Out-Null
           $guiExe = Get-ChildItem "gui\src-tauri\target" -Recurse -Filter "app.exe" | Where-Object { $_.FullName -like "*\release\app.exe" } | Select-Object -First 1
           if (-not $guiExe) { throw "Tauri GUI exe not found under gui\src-tauri\target\*\release\app.exe"; }
-          $out = "dist\obsidenc-gui-$tag-windows-x86_64.exe"
+          $out = "dist\obsidenc-gui.exe"
           Copy-Item $guiExe.FullName $out -Force
           $hash = Get-FileHash $out -Algorithm SHA256
           "$($hash.Hash.ToLower())  $(Split-Path $out -Leaf)" | Out-File "$out.sha256" -Encoding ASCII
@@ -70,7 +70,8 @@ jobs:
         with:
           name: obsidenc-windows-x86_64-${{ github.ref_name }}
           path: |
-            dist\*-windows-x86_64.exe
+            dist\obsidenc.exe
+            dist\obsidenc-gui.exe
 
       - name: Create GitHub Release and upload asset
         if: startsWith(github.ref, 'refs/tags/')
@@ -79,8 +80,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
           files: |
-            dist/*-windows-x86_64.exe
-            dist/*-windows-x86_64.exe.sha256
+            dist/obsidenc.exe
+            dist/obsidenc.exe.sha256
+            dist/obsidenc-gui.exe
+            dist/obsidenc-gui.exe.sha256
           draft: false
           prerelease: false
 
