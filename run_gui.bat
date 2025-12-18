@@ -13,12 +13,15 @@ if not exist "gui" (
     exit /b 1
 )
 
-echo [run_gui] Starting Tauri app (cargo tauri dev) in a minimized background window...
+echo [run_gui] Starting Tauri app (cargo tauri dev)...
 
-REM Launch Tauri dev in a separate, minimized console window so this script can exit immediately.
-REM The user is not forced to keep a visible console around, but logs still exist if needed.
-start "obsidenc-gui" /min cmd /c "cd /d .\gui && cargo tauri dev"
+REM Run Tauri directly in this console so no extra windows are spawned.
+cd /d ".\gui"
+cargo tauri dev
 
-endlocal & exit /b 0
+set EXIT_CODE=%ERRORLEVEL%
+echo [run_gui] Tauri exited with code %EXIT_CODE%
+
+endlocal & exit /b %EXIT_CODE%
 
 
