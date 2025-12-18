@@ -1,7 +1,5 @@
 <img width="205" height="205" alt="logo" src="https://github.com/user-attachments/assets/7bb3a32e-c2c4-46f2-a987-f7370f4684b8" />
 
-
-
 # obsidenc v1.0.2
 
 Paranoid-grade encryption utility. It tars a directory (no compression) and encrypts/decrypts it with Argon2id (RFC 9106 guidance) + XChaCha20-Poly1305. See [ANALYSIS.md](./ANALYSIS.md) for full details.
@@ -210,3 +208,6 @@ The improved fuzzer uses a dual-mode approach:
 This ensures coverage of both error paths and the actual decryption code paths.
 
 **Windows Users:** If you need to run fuzzing, use WSL (Windows Subsystem for Linux) or a Linux VM. The main encryption/decryption functionality works natively on Windows.
+
+<img width="595.5" height="451.5" alt="image" src="https://github.com/user-attachments/assets/259ec585-0e6e-4200-a469-4dbb1c89a39b" />
+
