@@ -1,4 +1,5 @@
-<img width="205" height="205" alt="logo" src="https://github.com/user-attachments/assets/7bb3a32e-c2c4-46f2-a987-f7370f4684b8" />
+<img width="1250" height="273" alt="image" src="https://github.com/user-attachments/assets/adf5102d-b34a-447c-a826-88938be67ff3" />
+
 
 # obsidenc v1.0.2
 
